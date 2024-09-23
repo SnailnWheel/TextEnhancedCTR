@@ -24,6 +24,7 @@ import pickle
 import os
 import logging
 import json
+import tqdm
 import re
 import shutil
 import glob
@@ -43,19 +44,17 @@ class FeatureProcessor(object):
                  **kwargs):
         logging.info("Set up feature processor...")
         self.data_dir = os.path.join(data_root, dataset_id)
-        self.pickle_file = os.path.join(self.data_dir, "feature_processor.pkl")
-        self.json_file = os.path.join(self.data_dir, "feature_map.json")
-        self.vocab_file = os.path.join(self.data_dir, "feature_vocab.json")
-        self.feature_cols = self._complete_feature_cols(feature_cols)
-        self.label_cols = label_col if type(label_col) == list else [label_col]
+        self.pickle_file = os.path.join(self.data_dir, "feature_processor.pkl")  # 特征处理器
+        self.json_file = os.path.join(self.data_dir, "feature_map.json")  # 特征映射
+        self.vocab_file = os.path.join(self.data_dir, "feature_vocab.json")  # 特征词汇表
+        self.feature_cols = self._complete_feature_cols(feature_cols)  # 将feature_cols完全展开，并套上list类型
+        self.label_cols = label_col if type(label_col) == list else [label_col]  # 将label_col套上list类型
         self.feature_map = FeatureMap(dataset_id, self.data_dir)
-        self.feature_map.labels = [col["name"] for col in self.label_cols]
-        self.feature_map.group_id = kwargs.get("group_id", None)
-        self.dtype_dict = dict(
-            (feat["name"], eval(feat["dtype"]) if type(feat["dtype"]) == str else feat["dtype"]) 
-            for feat in self.feature_cols + self.label_cols
-        )
-        self.processor_dict = dict()
+        self.feature_map.labels = [col["name"] for col in self.label_cols]  # labels == ['label']
+        self.feature_map.group_id = kwargs.get("group_id", None)  # group_id == 'user_id'
+        self.dtype_dict = dict((feat["name"], eval(feat["dtype"]) if type(feat["dtype"]) == str else feat["dtype"]) 
+                                for feat in self.feature_cols + self.label_cols)  # 字典：特征名 -> 数据类型
+        self.processor_dict = dict()  # 字典：特征名::处理器 -> 处理器实例对象
 
     def _complete_feature_cols(self, feature_cols):
         full_feature_cols = []
@@ -96,19 +95,16 @@ class FeatureProcessor(object):
             if col.get("preprocess"):
                 preprocess_args = re.split(r"\(|\)", col["preprocess"])
                 preprocess_fn = getattr(self, preprocess_args[0])
-                ddf = ddf.with_columns(
-                    preprocess_fn(*preprocess_args[1:-1])
-                    .alias(name)
-                    .cast(self.dtype_dict[name])
-                )
+                ddf = preprocess_fn(ddf, name, *preprocess_args[1:-1])
+                ddf = ddf.with_columns(pl.col(name).cast(self.dtype_dict[name]))
         active_cols = [col["name"] for col in all_cols if col.get("active") != False]
         ddf = ddf.select(active_cols)
         return ddf
 
-    def fit(self, train_ddf, min_categr_count=1, num_buckets=10, rebuild_dataset=True, **kwargs):
+    def fit(self, train_ddf, min_categr_count=1, num_buckets=10, rebuild_dataset=True, **kwargs):    
         logging.info("Fit feature processor...")
         self.rebuild_dataset = rebuild_dataset
-        for col in self.feature_cols:
+        for col in self.feature_cols:  # 激活特征列，根据特征类型调用相应处理方法
             name = col["name"]
             if col["active"]:
                 logging.info("Processing column: {}".format(col))
@@ -134,7 +130,7 @@ class FeatureProcessor(object):
         os.makedirs(self.data_dir, exist_ok=True)
         for col in self.feature_cols:
             name = col["name"]
-            if "pretrained_emb" in col:
+            if col["active"] and "pretrained_emb" in col:
                 logging.info("Loading pretrained embedding: " + name)
                 if "pretrain_dim" in col:
                     self.feature_map.features[name]["pretrain_dim"] = col["pretrain_dim"]
@@ -166,8 +162,8 @@ class FeatureProcessor(object):
                 if "pretrained_emb" not in spec: # "oov_idx" not used without pretrained_emb
                     del self.feature_map.features[name]["oov_idx"]
 
-        self.feature_map.num_fields = self.feature_map.get_num_fields()
-        self.feature_map.set_column_index()
+        self.feature_map.num_fields = self.feature_map.get_num_fields()  # 特征数量，此处为4 ['item_id', 'cate_id', 'item_history', 'cate_history']
+        self.feature_map.set_column_index()  # 设置列索引，共 1 + 1 + 1 + max_len + max_len + 1，索引为 0 到 1 + 1 + 1 + max_len + max_len + 1 - 1
         self.feature_map.save(self.json_file)
         self.save_pickle(self.pickle_file)
         self.save_vocab(self.vocab_file)
@@ -219,7 +215,7 @@ class FeatureProcessor(object):
                 tokenizer.fit_on_texts(col_series)
             else:
                 if "vocab_size" in col:
-                    tokenizer.update_vocab(range(col["vocab_size"] - 1))
+                    tokenizer.update_vocab(range(col["vocab_size"] - 1), self.dtype_dict[name])
                 else:
                     raise ValueError(f"{name}: vocab_size is required when rebuild_dataset=False")
             if "share_embedding" in col:
@@ -277,7 +273,7 @@ class FeatureProcessor(object):
             tokenizer.fit_on_texts(col_series)
         else:
             if "vocab_size" in col:
-                tokenizer.update_vocab(range(col["vocab_size"] - 1))
+                tokenizer.update_vocab(range(col["vocab_size"] - 1), self.dtype_dict[name])
             else:
                 raise ValueError(f"{name}: vocab_size is required when rebuild_dataset=False")
         if "share_embedding" in col:
@@ -296,7 +292,7 @@ class FeatureProcessor(object):
 
     def transform(self, ddf):
         logging.info("Transform feature columns to IDs...")
-        for feature, feature_spec in self.feature_map.features.items():
+        for feature, feature_spec in tqdm.tqdm(self.feature_map.features.items()):
             if feature in ddf.columns:
                 feature_type = feature_spec["type"]
                 col_series = ddf[feature]
@@ -310,7 +306,7 @@ class FeatureProcessor(object):
                     normalizer = self.processor_dict.get(feature + "::normalizer")
                     if normalizer:
                         ddf[feature] = normalizer.transform(col_series.values)
-                elif feature_type == "categorical":
+                elif feature_type == "categorical":  # 将原始id通过vocab转换为新id
                     category_processor = feature_spec.get("category_processor")
                     if category_processor is None:
                         ddf[feature] = (
@@ -321,10 +317,17 @@ class FeatureProcessor(object):
                         raise NotImplementedError
                     elif category_processor == "hash_bucket":
                         raise NotImplementedError
-                elif feature_type == "sequence":
+                elif feature_type == "sequence":  # 将原始id通过vocab转换为新id
+                    if feature == "item_emb_history":
+                        ddf[feature] = ddf["item_history"]
+                        continue
+                    elif feature == "item_emb":
+                        ddf[feature] = ddf["item_id"]
+                        continue
                     ddf[feature] = (self.processor_dict.get(feature + "::tokenizer")
                                     .encode_sequence(col_series))
-        return ddf
+        print(ddf.head())
+        return ddf  # pandas DataFrame
 
     def load_pickle(self, pickle_file=None):
         """ Load feature processor from cache """
@@ -351,5 +354,6 @@ class FeatureProcessor(object):
         with open(vocab_file, "w") as fd:
             fd.write(json.dumps(vocab, indent=4))
 
-    def copy_from(self, col_name):
-        return pl.col(col_name)
+    def copy_from(self, ddf, name, src_name):
+        ddf = ddf.with_columns(pl.col(src_name).alias(name))
+        return ddf

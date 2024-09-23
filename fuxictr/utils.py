@@ -25,7 +25,6 @@ import h5py
 import numpy as np
 import pandas as pd
 from collections import OrderedDict
-import fuxictr
 
 
 def load_config(config_dir, experiment_id):
@@ -85,7 +84,6 @@ def set_logger(params):
                         format='%(asctime)s P%(process)d %(levelname)s %(message)s',
                         handlers=[logging.FileHandler(log_file, mode='w'),
                                   logging.StreamHandler()])
-    logging.info("FuxiCTR version: " + fuxictr.__version__)
 
 def print_to_json(data, sort_keys=True):
     new_data = dict((k, str(v)) for k, v in data.items())
@@ -124,13 +122,13 @@ def load_pretrain_emb(pretrain_path, keys=["key", "value"]):
         values = [npz[k] for k in keys]
     elif pretrain_path.endswith("parquet"):
         df = pd.read_parquet(pretrain_path)
-        values = [df[k].values for k in keys]
+        values = [np.array(df[k].values.tolist()) for k in keys]
     else:
         raise ValueError(f"Embedding format not supported: {pretrain_path}")
     return values[0] if len(values) == 1 else values
 
 
-def not_in_whitelist(element, whitelist=[]):
+def  not_in_whitelist(element, whitelist=[]):
     if not whitelist:
         return False
     elif type(whitelist) == list:

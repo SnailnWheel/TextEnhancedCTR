@@ -20,6 +20,9 @@ from torch.utils.data import Dataset, DataLoader
 from torch.utils.data.dataloader import default_collate
 import pandas as pd
 import polars as pl
+import sys
+import os
+import gc
 
 
 class ParquetDataset(Dataset):
@@ -34,19 +37,25 @@ class ParquetDataset(Dataset):
         return self.darray.shape[0]
 
     def load_data(self, data_path):
-        df = pl.read_parquet(data_path)
-        all_cols = list(self.feature_map.features.keys()) + self.feature_map.labels
-        data_arrays = []
-        for col in all_cols:
-            if df[col].dtype != pl.List:
-                array = np.array(df[col])
-            else:
-                array = np.array(df[col].to_list())
-            data_arrays.append(array)
-        return np.column_stack(data_arrays)
+        data_dir = os.path.dirname(data_path)
+        data_name = os.path.splitext(os.path.basename(data_path))[0]
+        if not os.path.exists(os.path.join(data_dir, data_name + ".npy")):
+            df = pl.read_parquet(data_path)
+            all_cols = list(self.feature_map.features.keys()) + self.feature_map.labels
+            data_arrays = []
+            for col in all_cols:
+                if df[col].dtype != pl.List:
+                    array = np.array(df[col])
+                else:
+                    array = np.array(df[col].to_list())
+                print(f"{col}: array Memory Size: {sys.getsizeof(array) / (1024 ** 2):.2f} MB")
+                data_arrays.append(array)
+            np.save(os.path.join(data_dir, data_name + ".npy"), np.column_stack(data_arrays))
+            del data_arrays
+            gc.collect()
+        return np.load(os.path.join(data_dir, data_name + ".npy"), mmap_mode='r+')
 
-
-class ParquetDataLoader(DataLoader):
+class ParquetDataLoader(DataLoader):  # 定义一个dataloader，每个batch的数据为字典：fea_name -> data
     def __init__(self, feature_map, data_path, batch_size=32, shuffle=False,
                  num_workers=1, **kwargs):
         if not data_path.endswith(".parquet"):
@@ -63,7 +72,7 @@ class ParquetDataLoader(DataLoader):
         return self.num_batches
 
 
-class BatchCollator(object):
+class BatchCollator(object):  # 将每个batch的数据转化为torch.Tensor，然后按照feature和label划分，输出为字典, fea_name -> data
     def __init__(self, feature_map):
         self.feature_map = feature_map
 

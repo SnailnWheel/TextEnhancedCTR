@@ -104,7 +104,7 @@ class FeatureMap(object):
                                                                self.default_emb_dim))
         return total_dim
 
-    def set_column_index(self):
+    def set_column_index(self):  # 设置列索引
         logging.info("Set column index...")
         idx = 0
         for feature, feature_spec in self.features.items():

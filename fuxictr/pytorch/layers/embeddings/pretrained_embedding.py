@@ -45,7 +45,9 @@ class PretrainedEmbedding(nn.Module):
         padding_idx = feature_spec.get("padding_idx", None)
         self.oov_idx = feature_spec["oov_idx"]
         self.freeze_emb = feature_spec["freeze_emb"]
+        self.emb_cut = feature_spec["emb_cut"]
         self.pretrain_embedding = self.load_pretrained_embedding(feature_spec["vocab_size"],
+                                                                 embedding_dim,
                                                                  pretrain_dim,
                                                                  pretrain_path,
                                                                  vocab_path,
@@ -57,7 +59,7 @@ class PretrainedEmbedding(nn.Module):
                                              embedding_dim,
                                              padding_idx=padding_idx)
         self.proj = None
-        if pretrain_usage in ["init", "sum"] and embedding_dim != pretrain_dim:
+        if pretrain_usage in ["init", "sum"] and embedding_dim != pretrain_dim and (not self.emb_cut):
             self.proj = nn.Linear(pretrain_dim, embedding_dim, bias=False)
         if pretrain_usage == "concat":
             self.proj = nn.Linear(pretrain_dim + embedding_dim, embedding_dim, bias=False)
@@ -73,17 +75,18 @@ class PretrainedEmbedding(nn.Module):
             vocab_type = type(list(vocab.items())[1][0]) # get key dtype
         return vocab[feature_name], vocab_type
 
-    def load_pretrained_embedding(self, vocab_size, pretrain_dim, pretrain_path, vocab_path,
+    def load_pretrained_embedding(self, vocab_size, embedding_dim, pretrain_dim, pretrain_path, vocab_path,
                                   feature_name, freeze=False, padding_idx=None):
+        final_dim = embedding_dim if self.emb_cut else pretrain_dim
         embedding_layer = nn.Embedding(vocab_size,
-                                       pretrain_dim,
+                                       final_dim,
                                        padding_idx=padding_idx)
         if freeze:
-            embedding_matrix = np.zeros((vocab_size, pretrain_dim))
+            embedding_matrix = np.zeros((vocab_size, final_dim))
         else:
-            embedding_matrix = np.random.normal(loc=0, scale=1.e-4, size=(vocab_size, pretrain_dim))
+            embedding_matrix = np.random.normal(loc=0, scale=1.e-4, size=(vocab_size, final_dim))
             if padding_idx:
-                embedding_matrix[padding_idx, :] = np.zeros(pretrain_dim) # set as zero for PAD
+                embedding_matrix[padding_idx, :] = np.zeros(final_dim) # set as zero for PAD
         logging.info("Loading pretrained_emb: {}".format(pretrain_path))
         keys, embeddings = load_pretrain_emb(pretrain_path, keys=["key", "value"])
         assert embeddings.shape[-1] == pretrain_dim, f"pretrain_dim={pretrain_dim} not correct."
@@ -91,7 +94,7 @@ class PretrainedEmbedding(nn.Module):
         keys = keys.astype(vocab_type) # ensure the same dtype between pretrained keys and vocab keys
         for idx, word in enumerate(keys):
             if word in vocab:
-                embedding_matrix[vocab[word]] = embeddings[idx]
+                embedding_matrix[vocab[word]] = embeddings[idx][:final_dim]
         embedding_layer.weight = torch.nn.Parameter(torch.from_numpy(embedding_matrix).float())
         if freeze:
             embedding_layer.weight.requires_grad = False

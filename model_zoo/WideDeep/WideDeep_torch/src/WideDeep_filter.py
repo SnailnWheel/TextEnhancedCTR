@@ -18,11 +18,12 @@
 
 import torch
 from torch import nn
+import numpy as np
 from fuxictr.pytorch.models import BaseModel
-from fuxictr.pytorch.layers import FeatureEmbedding, MLP_Block, LogisticRegression
+from fuxictr.pytorch.layers import FeatureEmbeddingDict, MLP_Block, LogisticRegression, MaskedAveragePooling, Dice, Sim_Score_Filter
 
 
-class WideDeep(BaseModel):
+class WideDeep_filter(BaseModel):
     def __init__(self, 
                  feature_map, 
                  model_id="WideDeep", 
@@ -36,15 +37,28 @@ class WideDeep(BaseModel):
                  embedding_regularizer=None, 
                  net_regularizer=None,
                  **kwargs):
-        super(WideDeep, self).__init__(feature_map, 
+        super(WideDeep_filter, self).__init__(feature_map, 
                                        model_id=model_id, 
                                        gpu=gpu, 
                                        embedding_regularizer=embedding_regularizer, 
                                        net_regularizer=net_regularizer,
                                        **kwargs)
-        self.embedding_layer = FeatureEmbedding(feature_map, embedding_dim)
-        self.lr_layer = LogisticRegression(feature_map, use_bias=False)
-        self.dnn = MLP_Block(input_dim=embedding_dim * feature_map.num_fields,
+        self.embedding_layer = FeatureEmbeddingDict(feature_map, embedding_dim)
+            
+        self.feature_encoders = nn.ModuleDict()
+        self.feature_sequence = []
+        for feature, feature_spec in feature_map.features.items():
+            if feature_spec["source"] == "id" and feature_spec["type"] == "sequence":
+                self.feature_encoders[feature] = MaskedAveragePooling()
+                self.feature_sequence.append(feature)
+
+        self.filter = Sim_Score_Filter(feature_map,
+                                       self.feature_sequence,
+                                       embedding_dim=embedding_dim,
+                                       **kwargs)
+
+        self.lr_layer = LogisticRegression(feature_map, use_bias=False, feature_source="id")
+        self.dnn = MLP_Block(input_dim=feature_map.sum_emb_out_dim(feature_source="id"),
                              output_dim=1, 
                              hidden_units=hidden_units,
                              hidden_activations=hidden_activations,
@@ -59,10 +73,22 @@ class WideDeep(BaseModel):
         """
         Inputs: [X,y]
         """
-        X = self.get_inputs(inputs) 
-        feature_emb = self.embedding_layer(X)
+        X = self.get_inputs(inputs)
+        feature_emb_dict = self.embedding_layer(X)
+
+        # calculate similarity score
+        feature_emb_dict, sim_mask = self.filter(X, feature_emb_dict, self._epoch_index, self.stage)
+        
+        for sequence_field in self.feature_sequence:
+            X[sequence_field] = X[sequence_field] * sim_mask.float()
+
+        for feature in self.feature_sequence:
+            feature_emb_dict[feature] = self.feature_encoders[feature](feature_emb_dict[feature])
+        feature_emb = self.embedding_layer.dict2tensor(feature_emb_dict, feature_source="id")
+
         y_pred = self.lr_layer(X)
         y_pred += self.dnn(feature_emb.flatten(start_dim=1))
         y_pred = self.output_activation(y_pred)
         return_dict = {"y_pred": y_pred}
         return return_dict
+

@@ -39,11 +39,11 @@ class Tokenizer(object):
         self.padding = padding
         self.remap = remap
 
-    def fit_on_texts(self, series):
+    def fit_on_texts(self, series):  # 对col_series进行词频统计
         max_len = 0
         word_counts = Counter()
         with ProcessPoolExecutor(max_workers=(mp.cpu_count() // 2)) as executor:
-            chunk_size = 1000000
+            chunk_size = 200000
             tasks = []
             for idx in range(0, len(series), chunk_size):
                 data_chunk = series.iloc[idx: (idx + chunk_size)]
@@ -56,7 +56,7 @@ class Tokenizer(object):
             self.max_len = max_len
         self.build_vocab(word_counts)
 
-    def build_vocab(self, word_counts):
+    def build_vocab(self, word_counts):  # 构建词汇表
         word_counts = word_counts.items()
         # sort to guarantee the determinism of index order
         word_counts = sorted(word_counts, key=lambda x: (-x[1], x[0]))
@@ -74,16 +74,16 @@ class Tokenizer(object):
         else:
             self.vocab = dict((token, int(token)) for token in words)
         self.vocab["__PAD__"] = 0 # use 0 for reserved __PAD__
-        self.vocab["__OOV__"] = self.vocab_size() # use the last index for __OOV__
+        self.vocab["__OOV__"] = self.vocab_size() # use the last index for __OOV__ (out of vocab)
 
     def merge_vocab(self, shared_tokenizer):
-        if self.remap:
+        if self.remap:  # 以shared_tokenizer.vocab为基准
             new_words = 0
             for word in self.vocab.keys():
                 if word not in shared_tokenizer.vocab:
                     shared_tokenizer.vocab[word] = shared_tokenizer.vocab["__OOV__"] + new_words
                     new_words += 1
-        else:
+        else:  # 以self.vocab为基准
             shared_tokenizer.vocab.update(self.vocab)
         vocab_size = shared_tokenizer.vocab_size()
         if shared_tokenizer.vocab["__OOV__"] != vocab_size - 1:
@@ -94,9 +94,10 @@ class Tokenizer(object):
     def vocab_size(self):
         return max(self.vocab.values()) + 1 # In case that keys start from 1
 
-    def update_vocab(self, word_list):
+    def update_vocab(self, word_list, feature_dtype):
         new_words = 0
         for word in word_list:
+            word = feature_dtype(word)
             if word not in self.vocab:
                 self.vocab[word] = self.vocab.get("__OOV__", 0) + new_words
                 new_words += 1
@@ -123,7 +124,7 @@ class Tokenizer(object):
         )
         seqs = pad_sequences(series.to_list(), maxlen=self.max_len,
                              value=self.vocab["__PAD__"],
-                             padding=self.padding, truncating=self.padding)
+                             padding=self.padding, truncating=self.padding)  # 不足最长序列填充"__PAD__", 超过最长序列截断前部
         return seqs.tolist()
     
     def load_pretrained_vocab(self, feature_dtype, pretrain_path, expand_vocab=True):
@@ -136,16 +137,23 @@ class Tokenizer(object):
             vocab_size = self.vocab_size()
             for word in keys:
                 if word not in self.vocab:
-                    self.vocab[word] = vocab_size
-                    vocab_size += 1
+                    if self.remap:
+                        self.vocab[word] = vocab_size
+                        vocab_size += 1
+                    else:
+                        self.vocab[word] = int(word)                        
 
 
 def count_tokens(series, splitter=None):
-    max_len = 0
-    if splitter is not None: # for sequence
-        series = series.map(lambda text: text.split(splitter))
-        max_len = series.str.len().max()
-        word_counts = series.explode().value_counts()
-    else:
-        word_counts = series.value_counts()
-    return dict(word_counts), max_len
+    try:
+        max_len = 0
+        if splitter is not None: # for sequence
+            series = series.map(lambda text: text.split(splitter))
+            max_len = series.str.len().max()
+            word_counts = series.explode().value_counts()
+        else:
+            word_counts = series.value_counts()
+        return dict(word_counts), max_len
+    except Exception as e:
+        print(e)
+        raise e

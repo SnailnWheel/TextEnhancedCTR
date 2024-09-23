@@ -16,11 +16,11 @@
 
 
 import os
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
 import sys
 import logging
 import fuxictr_version
 from fuxictr import datasets
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
 from datetime import datetime
 from fuxictr.utils import load_config, set_logger, print_to_json, print_to_list
 from fuxictr.features import FeatureMap
@@ -39,8 +39,8 @@ if __name__ == '__main__':
     '''
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type=str, default='./config/', help='The config directory.')
-    parser.add_argument('--expid', type=str, default='DeepFM_test', help='The experiment id to run.')
-    parser.add_argument('--gpu', type=int, default=-1, help='The gpu index, -1 for cpu')
+    parser.add_argument('--expid', type=str, default='DCN_amazonelectronics_x1_id_only', help='The experiment id to run.')
+    parser.add_argument('--gpu', type=int, default=0, help='The gpu index, -1 for cpu')
     args = vars(parser.parse_args())
     
     experiment_id = args['expid']

@@ -18,6 +18,7 @@
 
 import torch
 from torch import nn
+import numpy as np
 from .dot_product_attention import ScaledDotProductAttention
 from ..activations import Dice
 from ..blocks.mlp_block import MLP_Block
@@ -52,18 +53,23 @@ class DIN_Attention(nn.Module):
         mask: mask of history_sequence, 0 for masked positions
         """
         seq_len = history_sequence.size(1)
-        target_item = target_item.unsqueeze(1).expand(-1, seq_len, -1)
+        target_item = target_item.unsqueeze(1).expand(-1, seq_len, -1)  # expand target_item embeddings to the same size as sequence
         attention_input = torch.cat([target_item, history_sequence, target_item - history_sequence, 
                                      target_item * history_sequence], dim=-1) # b x len x 4*emb
         attention_weight = self.attention_layer(attention_input.view(-1, 4 * self.embedding_dim))
         attention_weight = attention_weight.view(-1, seq_len) # b x len
         if mask is not None:
             attention_weight = attention_weight * mask.float()
-        if self.use_softmax:
+
+        # weight_np = attention_weight.detach().cpu().numpy()
+        # np.savetxt("./attention_score.csv", weight_np, delimiter=',')
+        
+        if self.use_softmax:  # True
             if mask is not None:
                 attention_weight += -1.e9 * (1 - mask.float())
-            attention_weight = attention_weight.softmax(dim=-1)
-        output = (attention_weight.unsqueeze(-1) * history_sequence).sum(dim=1)
+            attention_weight = attention_weight.softmax(dim=-1)  # b x len, softmax in dim 'len'
+
+        output = (attention_weight.unsqueeze(-1) * history_sequence).sum(dim=1)  # sum pooling
         return output
 
 

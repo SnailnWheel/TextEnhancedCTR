@@ -106,3 +106,10 @@ venv.bak/
 _build
 checkpoints
 .csv
+
+test_idealab.ipynb
+.vscode
+data/Amazon*
+data/KKBox
+*.png
+sim_score/*.csv

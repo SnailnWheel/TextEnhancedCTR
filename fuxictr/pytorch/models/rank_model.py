@@ -25,6 +25,8 @@ from fuxictr.metrics import evaluate_metrics
 from fuxictr.pytorch.torch_utils import get_device, get_optimizer, get_loss, get_regularizer
 from fuxictr.utils import Monitor, not_in_whitelist
 from tqdm import tqdm
+import pandas as pd
+from sim_score.check_sim_score import check_sim_score
 
 
 class BaseModel(nn.Module):
@@ -59,6 +61,7 @@ class BaseModel(nn.Module):
         self.model_dir = os.path.join(kwargs["model_root"], feature_map.dataset_id)
         self.checkpoint = os.path.abspath(os.path.join(self.model_dir, self.model_id + ".model"))
         self.validation_metrics = kwargs["metrics"]
+        self.save_embedding = kwargs.get("save_embedding", False)
 
     def compile(self, optimizer, loss, lr):
         self.optimizer = get_optimizer(optimizer, self.parameters(), lr)
@@ -102,7 +105,7 @@ class BaseModel(nn.Module):
         self.apply(reset_default_params)
         self.apply(reset_custom_params)
 
-    def get_inputs(self, inputs, feature_source=None):
+    def get_inputs(self, inputs, feature_source=None, is_cpu=False):
         X_dict = dict()
         for feature in inputs.keys():
             if feature in self.feature_map.labels:
@@ -112,8 +115,11 @@ class BaseModel(nn.Module):
                 continue
             if feature_source and not_in_whitelist(spec["source"], feature_source):
                 continue
-            X_dict[feature] = inputs[feature].to(self.device)
-        return X_dict
+            if is_cpu:
+                X_dict[feature] = inputs[feature]
+            else:
+                X_dict[feature] = inputs[feature].to(self.device)
+        return X_dict  # {'item_id': ..., 'cate_id': ..., 'item_history': ..., 'cate_history': ...}
 
     def get_labels(self, inputs):
         """ Please override get_labels() when using multiple labels!
@@ -153,6 +159,20 @@ class BaseModel(nn.Module):
         for epoch in range(epochs):
             self._epoch_index = epoch
             self.train_epoch(data_generator)
+
+            if hasattr(self, "filter"):
+                if self.filter.get_sim_score and self._epoch_index == 0 and self.filter.sim_score_np:
+                    logging.info("------------------ Saving similarity score... ------------------")
+                    for stage in self.filter.sim_score_np.keys():
+                        self.filter.sim_score_np[stage] = np.vstack(self.filter.sim_score_np[stage])
+                        np.savetxt(f"../../sim_score/sim_score_KKBox_{stage}.csv", self.filter.sim_score_np[stage], delimiter=',')
+                        
+                    self.filter.sim_score_np = np.vstack(list(self.filter.sim_score_np.values()))
+                    np.savetxt(f"../../sim_score/sim_score_KKBox_all.csv", self.filter.sim_score_np, delimiter=',')
+                    self.filter.sim_score_np = False
+                    logging.info("------------------ Saving similarity score done! ------------------")
+                    check_sim_score()
+
             if self._stop_training:
                 break
             else:
@@ -188,14 +208,15 @@ class BaseModel(nn.Module):
         val_logs = self.evaluate(self.valid_gen, metrics=self._monitor.get_metrics())
         self.checkpoint_and_earlystop(val_logs)
         self.train()
+        self.stage = "train"
 
     def train_step(self, batch_data):
         self.optimizer.zero_grad()
         return_dict = self.forward(batch_data)
         y_true = self.get_labels(batch_data)
-        loss = self.compute_loss(return_dict, y_true)
+        loss = self.compute_loss(return_dict, y_true)  # add normalization loss
         loss.backward()
-        nn.utils.clip_grad_norm_(self.parameters(), self._max_gradient_norm)
+        nn.utils.clip_grad_norm_(self.parameters(), self._max_gradient_norm)  # 梯度裁剪，防止梯度爆炸
         self.optimizer.step()
         return loss
 
@@ -203,6 +224,7 @@ class BaseModel(nn.Module):
         self._batch_index = 0
         train_loss = 0
         self.train()
+        self.stage ="train"
         if self._verbose == 0:
             batch_iterator = data_generator
         else:
@@ -221,6 +243,7 @@ class BaseModel(nn.Module):
 
     def evaluate(self, data_generator, metrics=None):
         self.eval()  # set to evaluation mode
+        self.stage = "eval"
         with torch.no_grad():
             y_pred = []
             y_true = []
@@ -245,6 +268,7 @@ class BaseModel(nn.Module):
 
     def predict(self, data_generator):
         self.eval()  # set to evaluation mode
+        self.stage = "eval"
         with torch.no_grad():
             y_pred = []
             if self._verbose > 0:
@@ -265,6 +289,24 @@ class BaseModel(nn.Module):
         self.to(self.device)
         state_dict = torch.load(checkpoint, map_location="cpu")
         self.load_state_dict(state_dict)
+
+        # Save embeddings
+        if self.save_embedding:
+            for feature, layer in (self.embedding_layer.embedding_layers.items() 
+                                   if hasattr(self.embedding_layer, "embedding_layers") 
+                                   else self.embedding_layer.embedding_layer.embedding_layers.items()):
+                if "share_embedding" in self.feature_map.features[feature]: continue
+                assert type(layer) == nn.Embedding, f"The type of {feature}'s embedding layer is {type(layer)} instead of nn.Embedding."
+                embedding_matrix = layer.weight.data
+                logging.info(f'Saving {feature} embedding ...  shape: {embedding_matrix.shape}')
+                embedding_list = embedding_matrix.tolist()
+                keys = list(range(1, len(embedding_list) - 1))
+                df = pd.DataFrame({
+                    'key': keys,
+                    'value': embedding_list[1:-1]
+                })
+                df.to_parquet(os.path.abspath(os.path.join(self.model_dir, f'{feature}_pretrained_emb.parquet')), index=False)
+                logging.info("Saving embedding succeed!")
 
     def get_output_activation(self, task):
         if task == "binary_classification":

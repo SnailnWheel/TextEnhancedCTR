@@ -86,7 +86,7 @@ def build_dataset(feature_encoder, train_data=None, valid_data=None, test_data=N
                 + "Please delete it manually if rebuilding is required.")
 
         # Load data files
-        train_ddf = feature_encoder.read_data(train_data, **kwargs)
+        train_ddf = feature_encoder.read_data(train_data, **kwargs)  # read csv file to polars DataFrame
         valid_ddf = None
         test_ddf = None
 
@@ -99,9 +99,9 @@ def build_dataset(feature_encoder, train_data=None, valid_data=None, test_data=N
                                                               valid_size, test_size, split_type)
         
         # fit and transform train_ddf
-        train_ddf = feature_encoder.preprocess(train_ddf)
-        feature_encoder.fit(train_ddf, rebuild_dataset=True, **kwargs)
-        transform(feature_encoder, train_ddf, 'train', block_size=data_block_size)
+        train_ddf = feature_encoder.preprocess(train_ddf)  # fill null, other preprocessing and return active features
+        feature_encoder.fit(train_ddf, rebuild_dataset=True, **kwargs)  # write information into Class FeatureProcessor, create Tokenizer and write down 3 files
+        transform(feature_encoder, train_ddf, 'train', block_size=data_block_size)  # transform polars DataFrame into parquet, at the same time map new ids
         del train_ddf
         gc.collect()
 

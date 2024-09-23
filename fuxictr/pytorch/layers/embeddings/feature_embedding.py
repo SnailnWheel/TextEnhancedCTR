@@ -184,7 +184,7 @@ class FeatureEmbeddingDict(nn.Module):
                     embeddings = self.embedding_layers[feature](inp)
                 else:
                     raise NotImplementedError
-                if feature in self.feature_encoders:
+                if feature in self.feature_encoders:  # 如果再进行一层encode
                     embeddings = self.feature_encoders[feature](embeddings)
                 feature_emb_dict[feature] = embeddings
-        return feature_emb_dict
+        return feature_emb_dict  # {'item_id': <embbedding_vectors>, ...}

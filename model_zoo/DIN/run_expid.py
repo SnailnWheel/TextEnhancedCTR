@@ -16,11 +16,11 @@
 
 
 import os
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
 import sys
 import logging
 import fuxictr_version
 from fuxictr import datasets
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
 from datetime import datetime
 from fuxictr.utils import load_config, set_logger, print_to_json, print_to_list
 from fuxictr.features import FeatureMap
@@ -32,6 +32,7 @@ import gc
 import argparse
 import os
 from pathlib import Path
+from data.data_filter import data_filter
 
 
 if __name__ == '__main__':
@@ -39,8 +40,8 @@ if __name__ == '__main__':
     '''
     parser = argparse.ArgumentParser()
     parser.add_argument('--config', type=str, default='./config/', help='The config directory.')
-    parser.add_argument('--expid', type=str, default='DeepFM_test', help='The experiment id to run.')
-    parser.add_argument('--gpu', type=int, default=-1, help='The gpu index, -1 for cpu')
+    parser.add_argument('--expid', type=str, default='DIN_amazonelectronics_x1_id_only', help='The experiment id to run.')
+    parser.add_argument('--gpu', type=int, default=0, help='The gpu index, -1 for cpu')
     args = vars(parser.parse_args())
     
     experiment_id = args['expid']
@@ -61,9 +62,18 @@ if __name__ == '__main__':
     feature_map.load(feature_map_json, params)
     logging.info("Feature specs: " + print_to_json(feature_map.features))
     
-    model_class = getattr(src, params['model'])
+    model_class = getattr(src, params['model'])  # DIN
     model = model_class(feature_map, **params)
     model.count_parameters() # print number of parameters used in model
+
+    if params.get("data_filter", False):
+        logging.info("========Begin preparing filtered dataset=========")
+        params["shuffle"] = False
+        train_gen, valid_gen, test_gen = RankDataLoader(feature_map, stage='both', **params).make_iterator()
+        params["train_data"], params["valid_data"], params["test_data"] = data_filter(train_gen, valid_gen, test_gen, model, **params)
+        params["shuffle"] = True
+        del train_gen, valid_gen, test_gen
+        gc.collect()
 
     train_gen, valid_gen = RankDataLoader(feature_map, stage='train', **params).make_iterator()
     model.fit(train_gen, validation_data=valid_gen, **params)

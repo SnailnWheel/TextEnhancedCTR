@@ -7,3 +7,598 @@ tiny_seq:
     test_data: ../../data/tiny_seq/test.npz
 
 
+
+AmazonElectronics_x1_id_only:
+    data_format: csv
+    data_root: ../../data/Amazon/
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical, vocab_size: 192405}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical, vocab_size: 63003}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical, vocab_size: 803}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence, vocab_size: 63003}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence, vocab_size: 803}
+    - {active: false, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 128, pretrained_emb: ../../data/Amazon/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: false, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 128, pretrained_emb: ../../data/Amazon/iid2emb_dict.parquet, pretrain_dim: 1536, vocab_size: 63003}
+    - {active: false, dtype: str, feature_encoder: null, max_len: 100,
+        name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/Amazon/AmazonElectronics_x1_id_only/test.parquet
+    train_data: ../../data/Amazon/AmazonElectronics_x1_id_only/train.parquet
+    valid_data: ../../data/Amazon/AmazonElectronics_x1_id_only/valid.parquet
+
+AmazonElectronics_x1_text_only:
+    data_format: csv
+    data_root: ../../data/Amazon/
+    feature_cols:
+    - {active: false, dtype: int, name: user_id, remap: false, type: categorical}
+    - {active: false, dtype: str, name: item_id, remap: false, type: categorical}
+    - {active: false, dtype: str, name: cate_id, remap: false, type: categorical}
+    - {active: false, dtype: str, feature_encoder: null, max_len: 100,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence}
+    - {active: false, dtype: str, feature_encoder: null, max_len: 100,
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence}
+    - {active: true, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon/iid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        embedding_dim: 1536, name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/Amazon/test.csv
+    train_data: ../../data/Amazon/train.csv
+    valid_data: ../../data/Amazon/test.csv
+
+AmazonElectronics_x1_mix:
+    data_format: csv
+    data_root: ../../data/Amazon/
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/user_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/item_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/cate_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence}
+    - {active: true, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon/iid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        embedding_dim: 1536, name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/Amazon/test.csv
+    train_data: ../../data/Amazon/train.csv
+    valid_data: ../../data/Amazon/test.csv
+
+AmazonElectronics_x1_mix_uniattn:
+    data_format: csv
+    data_root: ../../data/Amazon/
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/user_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/item_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/cate_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence}
+    - {active: true, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon/iid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        embedding_dim: 1536, name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/Amazon/test.csv
+    train_data: ../../data/Amazon/train.csv
+    valid_data: ../../data/Amazon/test.csv
+
+AmazonElectronics_x1_mix_wadd:
+    data_format: csv
+    data_root: ../../data/Amazon/
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/user_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/item_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/cate_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence}
+    - {active: true, dtype: int, name: user_emb, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, name: item_emb, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/iid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/Amazon/test.csv
+    train_data: ../../data/Amazon/train.csv
+    valid_data: ../../data/Amazon/test.csv
+
+AmazonElectronics_x1_mix_MLP_fusion:
+    data_format: csv
+    data_root: ../../data/Amazon/
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/user_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/item_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/cate_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence}
+    - {active: true, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon/iid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        embedding_dim: 1536, name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/Amazon/test.csv
+    train_data: ../../data/Amazon/train.csv
+    valid_data: ../../data/Amazon/test.csv
+
+AmazonElectronics_x1_mix_MLP_fusion_b:
+    data_format: csv
+    data_root: ../../data/Amazon/
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/user_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/item_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/cate_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence}
+    - {active: true, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon/iid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        embedding_dim: 1536, name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/Amazon/test.csv
+    train_data: ../../data/Amazon/train.csv
+    valid_data: ../../data/Amazon/test.csv
+
+AmazonElectronics_x1_mix_MLP_adapter:
+    data_format: csv
+    data_root: ../../data/Amazon/
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/user_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/item_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/cate_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence}
+    - {active: true, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 512, pretrained_emb: ../../data/Amazon/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 512, pretrained_emb: ../../data/Amazon/iid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        embedding_dim: 512, name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/Amazon/test.csv
+    train_data: ../../data/Amazon/train.csv
+    valid_data: ../../data/Amazon/test.csv
+
+AmazonElectronics_x1_mix_MLP_adapter_b:
+    data_format: csv
+    data_root: ../../data/Amazon/
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/user_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/item_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/cate_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence}
+    - {active: true, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon/iid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        embedding_dim: 1536, name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/Amazon/test.csv
+    train_data: ../../data/Amazon/train.csv
+    valid_data: ../../data/Amazon/test.csv
+
+AmazonElectronics_x1_ensemble:
+    data_format: csv
+    data_root: ../../data/Amazon/
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/user_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/item_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/cate_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence}
+    - {active: true, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 64, pretrained_emb: ../../data/Amazon/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 64, pretrained_emb: ../../data/Amazon/iid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        embedding_dim: 64, name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/Amazon/test.csv
+    train_data: ../../data/Amazon/train.csv
+    valid_data: ../../data/Amazon/test.csv
+
+AmazonElectronics_x1_cat_bf_out:
+    data_format: csv
+    data_root: ../../data/Amazon/
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/user_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/item_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/cate_id_pretrained_emb.parquet, pretrain_dim: 64}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence}
+    - {active: true, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon/iid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        embedding_dim: 1536, name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/Amazon/test.csv
+    train_data: ../../data/Amazon/train.csv
+    valid_data: ../../data/Amazon/test.csv
+
+AmazonElectronics_x1_filter_pre:
+    data_format: csv
+    data_root: ../../data/Amazon/
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/user_id_pretrained_emb.parquet, pretrain_dim: 64, freeze_emb: false}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/item_id_pretrained_emb.parquet, pretrain_dim: 64, freeze_emb: false}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon/cate_id_pretrained_emb.parquet, pretrain_dim: 64, freeze_emb: false}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence}
+    - {active: false, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon/iid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        embedding_dim: 1536, name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/Amazon/test.csv
+    train_data: ../../data/Amazon/train.csv
+    valid_data: ../../data/Amazon/test.csv
+
+AmazonElectronics_x1_filter:
+    data_format: csv
+    data_root: ../../data/Amazon/
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence}
+    - {active: false, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon/iid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        embedding_dim: 1536, name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/Amazon/test.csv
+    train_data: ../../data/Amazon/train.csv
+    valid_data: ../../data/Amazon/test.csv
+
+AmazonElectronics_x1_filter_pre_v2:
+    data_format: csv
+    data_root: ../../data/Amazon/
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical, vocab_size: 192405,
+        pretrained_emb: ../../data/Amazon/user_id_pretrained_emb.parquet, pretrain_dim: 64, freeze_emb: false}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical, vocab_size: 63003,
+        pretrained_emb: ../../data/Amazon/item_id_pretrained_emb.parquet, pretrain_dim: 64, freeze_emb: false}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical, vocab_size: 803,
+        pretrained_emb: ../../data/Amazon/cate_id_pretrained_emb.parquet, pretrain_dim: 64, freeze_emb: false}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence, vocab_size: 63003}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence, vocab_size: 803}
+    - {active: false, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon/iid2emb_dict_v2.parquet, pretrain_dim: 1536, vocab_size: 63003}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        embedding_dim: 1536, name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence, vocab_size: 63003}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/Amazon/AmazonElectronics_x1_filter_v2/test.parquet
+    train_data: ../../data/Amazon/AmazonElectronics_x1_filter_v2/train.parquet
+    valid_data: ../../data/Amazon/AmazonElectronics_x1_filter_v2/valid.parquet
+
+AmazonElectronics_x1_filter_v2:
+    data_format: csv
+    data_root: ../../data/Amazon/
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical, vocab_size: 192405}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical, vocab_size: 63003}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical, vocab_size: 803}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence, vocab_size: 63003}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence, vocab_size: 803}
+    - {active: false, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon/iid2emb_dict_v2.parquet, pretrain_dim: 1536, vocab_size: 63003}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        embedding_dim: 1536, name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence, vocab_size: 63003}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/Amazon/AmazonElectronics_x1_filter_v2/test.parquet
+    train_data: ../../data/Amazon/AmazonElectronics_x1_filter_v2/train.parquet
+    valid_data: ../../data/Amazon/AmazonElectronics_x1_filter_v2/valid.parquet
+
+AmazonBooks_x1_id_only:
+    data_format: csv
+    data_root: ../../data/Amazon_Books/ 
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical, vocab_size: 603670}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical, vocab_size: 367984}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical, vocab_size: 1581}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence, vocab_size: 367984}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence, vocab_size: 1581}
+    - {active: false, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 128, pretrained_emb: ../../data/Amazon/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: false, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 128, pretrained_emb: ../../data/Amazon_Books/iid2emb_dict_v2.parquet, pretrain_dim: 1536, vocab_size: 367984}
+    - {active: false, dtype: str, feature_encoder: null, max_len: 100,
+        name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/Amazon_Books/AmazonBooks_x1_id_only/test.parquet
+    train_data: ../../data/Amazon_Books/AmazonBooks_x1_id_only/train.parquet
+    valid_data: ../../data/Amazon_Books/AmazonBooks_x1_id_only/valid.parquet
+
+AmazonBooks_x1_filter_pre_v2:
+    data_format: csv
+    data_root: ../../data/Amazon_Books/ 
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon_Books/user_id_pretrained_emb.parquet, pretrain_dim: 64, freeze_emb: false, vocab_size: 603670}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon_Books/item_id_pretrained_emb.parquet, pretrain_dim: 64, freeze_emb: false, vocab_size: 367984}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon_Books/cate_id_pretrained_emb.parquet, pretrain_dim: 64, freeze_emb: false, vocab_size: 1581}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence, vocab_size: 367984}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence, vocab_size: 1581}
+    - {active: false, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon_Books/iid2emb_dict_v2.parquet, pretrain_dim: 1536, vocab_size: 367984}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        embedding_dim: 1536, name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence, vocab_size: 367984}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/Amazon_Books/AmazonBooks_x1_filter_pre_v2/test.parquet
+    train_data: ../../data/Amazon_Books/AmazonBooks_x1_filter_pre_v2/train.parquet
+    valid_data: ../../data/Amazon_Books/AmazonBooks_x1_filter_pre_v2/valid.parquet
+
+AmazonBooks_x1_filter_v2:
+    data_format: csv
+    data_root: ../../data/Amazon_Books/ 
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical, vocab_size: 603670}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical, vocab_size: 367984}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical, vocab_size: 1581}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence, vocab_size: 367984}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence, vocab_size: 1581}
+    - {active: false, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon_Books/iid2emb_dict_v2.parquet, pretrain_dim: 1536, vocab_size: 367984}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        embedding_dim: 1536, name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence, vocab_size: 367984}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/Amazon_Books/AmazonBooks_x1_filter_pre_v2/test.parquet
+    train_data: ../../data/Amazon_Books/AmazonBooks_x1_filter_pre_v2/train.parquet
+    valid_data: ../../data/Amazon_Books/AmazonBooks_x1_filter_pre_v2/valid.parquet
+
+AmazonMovies_x1_id_only:
+    data_format: csv
+    data_root: ../../data/Amazon_Movies/ 
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical, vocab_size: 123962}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical, vocab_size: 50054}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical, vocab_size: 31}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence, vocab_size: 50054}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence, vocab_size: 31}
+    - {active: false, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 128, pretrained_emb: ../../data/Amazon/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: false, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 128, pretrained_emb: ../../data/Amazon_Movies/iid2emb_dict_v2.parquet, pretrain_dim: 1536, vocab_size: 50054}
+    - {active: false, dtype: str, feature_encoder: null, max_len: 100,
+        name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/Amazon_Movies/AmazonMovies_x1_id_only/test.parquet
+    train_data: ../../data/Amazon_Movies/AmazonMovies_x1_id_only/train.parquet
+    valid_data: ../../data/Amazon_Movies/AmazonMovies_x1_id_only/valid.parquet
+
+AmazonMovies_x1_filter_pre_v2:
+    data_format: csv
+    data_root: ../../data/Amazon_Movies/ 
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon_Movies/user_id_pretrained_emb.parquet, pretrain_dim: 64, freeze_emb: false, vocab_size: 123962}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon_Movies/item_id_pretrained_emb.parquet, pretrain_dim: 64, freeze_emb: false, vocab_size: 50054}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Amazon_Movies/cate_id_pretrained_emb.parquet, pretrain_dim: 64, freeze_emb: false, vocab_size: 31}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence, vocab_size: 50054}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence, vocab_size: 31}
+    - {active: false, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon_Movies/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon_Movies/iid2emb_dict_v2.parquet, pretrain_dim: 1536, vocab_size: 50054}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        embedding_dim: 1536, name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence, vocab_size: 50054}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/Amazon_Movies/AmazonMovies_x1_filter_v2/test.parquet
+    train_data: ../../data/Amazon_Movies/AmazonMovies_x1_filter_v2/train.parquet
+    valid_data: ../../data/Amazon_Movies/AmazonMovies_x1_filter_v2/valid.parquet
+
+AmazonMovies_x1_filter_v2:
+    data_format: csv
+    data_root: ../../data/Amazon_Movies/ 
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical, vocab_size: 123962}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical, vocab_size: 50054}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical, vocab_size: 31}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence, vocab_size: 50054}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence, vocab_size: 31}
+    - {active: false, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Amazon_Movies/iid2emb_dict_v2.parquet, pretrain_dim: 1536, vocab_size: 50054}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100,
+        embedding_dim: 1536, name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence, vocab_size: 50054}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/Amazon_Movies/AmazonMovies_x1_filter_v2/test.parquet
+    train_data: ../../data/Amazon_Movies/AmazonMovies_x1_filter_v2/train.parquet
+    valid_data: ../../data/Amazon_Movies/AmazonMovies_x1_filter_v2/valid.parquet
+
+KKBox_x1_id_only:
+    data_format: csv
+    data_root: ../../data/KKBox/ 
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical, vocab_size: 28172}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical, vocab_size: 359916}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical, vocab_size: 161}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100, remap: false,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence, vocab_size: 359916}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100, remap: false, 
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence, vocab_size: 161}
+    - {active: false, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 128, pretrained_emb: ../../data/Amazon/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: false, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 128, pretrained_emb: ../../data/KKBox/iid2emb_dict_v2.parquet, pretrain_dim: 1536, vocab_size: 359916}
+    - {active: false, dtype: str, feature_encoder: null, max_len: 100, remap: false,
+        name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/KKBox/KKBox_x1_id_only/test.parquet
+    train_data: ../../data/KKBox/KKBox_x1_id_only/train.parquet
+    valid_data: ../../data/KKBox/KKBox_x1_id_only/valid.parquet
+
+KKBox_x1_filter_pre_v2:
+    data_format: csv
+    data_root: ../../data/KKBox/ 
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/KKBox/user_id_pretrained_emb.parquet, pretrain_dim: 64, freeze_emb: false, vocab_size: 28172}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/KKBox/item_id_pretrained_emb.parquet, pretrain_dim: 64, freeze_emb: false, vocab_size: 359916}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/KKBox/cate_id_pretrained_emb.parquet, pretrain_dim: 64, freeze_emb: false, vocab_size: 161}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100, remap: false,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence, vocab_size: 359916}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100, remap: false,
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence, vocab_size: 161}
+    - {active: false, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/KKBox/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/KKBox/iid2emb_dict_v2.parquet, pretrain_dim: 1536, vocab_size: 359916}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100, remap: false,
+        embedding_dim: 1536, name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence, vocab_size: 359916}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/KKBox/KKBox_x1_filter_v2/test.parquet
+    train_data: ../../data/KKBox/KKBox_x1_filter_v2/train.parquet
+    valid_data: ../../data/KKBox/KKBox_x1_filter_v2/valid.parquet
+
+KKBox_x1_filter_v2:
+    data_format: csv
+    data_root: ../../data/KKBox/ 
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical, vocab_size: 28172}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical, vocab_size: 359916}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical, vocab_size: 161}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100, remap: false,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence, vocab_size: 359916}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100, remap: false,
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence, vocab_size: 161}
+    - {active: false, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/KKBox/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/KKBox/iid2emb_dict_v2.parquet, pretrain_dim: 1536, vocab_size: 359916}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100, remap: false,
+        embedding_dim: 1536, name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence, vocab_size: 359916}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/KKBox/KKBox_x1_filter_v2/test.parquet
+    train_data: ../../data/KKBox/KKBox_x1_filter_v2/train.parquet
+    valid_data: ../../data/KKBox/KKBox_x1_filter_v2/valid.parquet
+
