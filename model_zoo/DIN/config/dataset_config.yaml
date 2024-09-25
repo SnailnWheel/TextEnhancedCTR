@@ -602,3 +602,75 @@ KKBox_x1_filter_v2:
     train_data: ../../data/KKBox/KKBox_x1_filter_v2/train.parquet
     valid_data: ../../data/KKBox/KKBox_x1_filter_v2/valid.parquet
 
+Yelp_x1_id_only:
+    data_format: csv
+    data_root: ../../data/Yelp/ 
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical, vocab_size: 287118}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical, vocab_size: 150348}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical, vocab_size: 1162}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100, remap: false,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence, vocab_size: 150348}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100, remap: false, 
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence, vocab_size: 1162}
+    - {active: false, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 128, pretrained_emb: ../../data/Amazon/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: false, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 128, pretrained_emb: ../../data/Yelp/iid2emb_dict_v2.parquet, pretrain_dim: 1536, vocab_size: 351503489916}
+    - {active: false, dtype: str, feature_encoder: null, max_len: 100, remap: false,
+        name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/Yelp/test.csv
+    train_data: ../../data/Yelp/train.csv
+    valid_data: ../../data/Yelp/test.csv
+
+Yelp_x1_filter_pre_v2:
+    data_format: csv
+    data_root: ../../data/Yelp/ 
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Yelp/user_id_pretrained_emb.parquet, pretrain_dim: 64, freeze_emb: false, vocab_size: 287118}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Yelp/item_id_pretrained_emb.parquet, pretrain_dim: 64, freeze_emb: false, vocab_size: 150348}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical,
+        pretrained_emb: ../../data/Yelp/cate_id_pretrained_emb.parquet, pretrain_dim: 64, freeze_emb: false, vocab_size: 1162}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100, remap: false,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence, vocab_size: 150348}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100, remap: false,
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence, vocab_size: 1162}
+    - {active: false, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Yelp/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Yelp/iid2emb_dict_v2.parquet, pretrain_dim: 1536, vocab_size: 150348}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100, remap: false,
+        embedding_dim: 1536, name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence, vocab_size: 150348}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/Yelp/Yelp_x1_filter_v2/test.parquet
+    train_data: ../../data/Yelp/Yelp_x1_filter_v2/train.parquet
+    valid_data: ../../data/Yelp/Yelp_x1_filter_v2/valid.parquet
+
+Yelp_x1_filter_v2:
+    data_format: csv
+    data_root: ../../data/Yelp/ 
+    feature_cols:
+    - {active: true, dtype: int, name: user_id, remap: false, type: categorical, vocab_size: 287118}
+    - {active: true, dtype: str, name: item_id, remap: false, type: categorical, vocab_size: 150348}
+    - {active: true, dtype: str, name: cate_id, remap: false, type: categorical, vocab_size: 1162}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100, remap: false,
+        name: item_history, share_embedding: item_id, splitter: ^, type: sequence, vocab_size: 150348}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100, remap: false,
+        name: cate_history, share_embedding: cate_id, splitter: ^, type: sequence, vocab_size: 1162}
+    - {active: false, dtype: int, name: user_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Yelp/uid2emb_dict.parquet, pretrain_dim: 1536}
+    - {active: true, dtype: str, name: item_emb, remap: false, type: categorical,
+        embedding_dim: 1536, pretrained_emb: ../../data/Yelp/iid2emb_dict_v2.parquet, pretrain_dim: 1536, vocab_size: 150348}
+    - {active: true, dtype: str, feature_encoder: null, max_len: 100, remap: false,
+        embedding_dim: 1536, name: item_emb_history, share_embedding: item_emb, splitter: ^, type: sequence, vocab_size: 150348}
+    label_col: {dtype: float, name: label}
+    min_categr_count: 1
+    test_data: ../../data/Yelp/Yelp_x1_filter_v2/test.parquet
+    train_data: ../../data/Yelp/Yelp_x1_filter_v2/train.parquet
+    valid_data: ../../data/Yelp/Yelp_x1_filter_v2/valid.parquet
+

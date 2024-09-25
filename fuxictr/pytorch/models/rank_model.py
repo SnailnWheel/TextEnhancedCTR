@@ -165,10 +165,10 @@ class BaseModel(nn.Module):
                     logging.info("------------------ Saving similarity score... ------------------")
                     for stage in self.filter.sim_score_np.keys():
                         self.filter.sim_score_np[stage] = np.vstack(self.filter.sim_score_np[stage])
-                        np.savetxt(f"../../sim_score/sim_score_KKBox_{stage}.csv", self.filter.sim_score_np[stage], delimiter=',')
+                        np.savetxt(f"../../sim_score/sim_score_Yelp_{stage}.csv", self.filter.sim_score_np[stage], delimiter=',')
                         
                     self.filter.sim_score_np = np.vstack(list(self.filter.sim_score_np.values()))
-                    np.savetxt(f"../../sim_score/sim_score_KKBox_all.csv", self.filter.sim_score_np, delimiter=',')
+                    np.savetxt(f"../../sim_score/sim_score_Yelp_all.csv", self.filter.sim_score_np, delimiter=',')
                     self.filter.sim_score_np = False
                     logging.info("------------------ Saving similarity score done! ------------------")
                     check_sim_score()

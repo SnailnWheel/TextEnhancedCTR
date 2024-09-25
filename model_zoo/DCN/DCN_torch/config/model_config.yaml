@@ -968,3 +968,233 @@ DCN_kkbox_x1_filter_attn_score_v2:
     shuffle: true
     task: binary_classification
     verbose: 1
+
+DCN_yelp_x1_id_only:
+    batch_norm: false
+    batch_size: 1024
+    dataset_id: Yelp_x1_id_only
+    debug_mode: false
+    dnn_activations: relu
+    dnn_hidden_units: [1024, 512, 256]
+    early_stop_patience: 2
+    embedding_dim: 64
+    embedding_regularizer: 0.005
+    epochs: 100
+    eval_interval: 1
+    feature_specs: null
+    group_id: user_id
+    learning_rate: 0.0005
+    loss: binary_crossentropy
+    metrics: [gAUC, AUC, logloss]
+    model: DCN
+    model_id: DCN_base
+    model_root: ./checkpoints/DCN_yelp_x1/
+    monitor: {AUC: 1, gAUC: 1}
+    monitor_mode: max
+    net_dropout: 0.1
+    net_regularizer: 0
+    num_cross_layers: 6
+    num_workers: 3
+    optimizer: adam
+    ordered_features: null
+    pickle_feature_encoder: true
+    rebuild_dataset: false
+    save_embedding: true
+    save_best_only: true
+    seed: 309
+    shuffle: true
+    task: binary_classification
+    verbose: 1
+
+DCN_yelp_x1_filter_cosine_pre_v2:
+    attention_dropout: 0.1
+    attention_hidden_activations: Dice
+    attention_hidden_units: [512, 256]
+    attention_output_activation: null
+    batch_norm: false
+    batch_size: 1024
+    dataset_id: Yelp_x1_filter_pre_v2
+    debug_mode: false
+    dnn_activations: relu
+    dnn_hidden_units: [1024, 512, 256]
+    early_stop_patience: 2
+    embedding_dim: 64
+    embedding_regularizer: 0.005
+    epochs: 100
+    eval_interval: 1
+    feature_specs:
+    - {source: id, emb_cut: false, name: user_id}
+    - {source: id, emb_cut: false, name: item_id}
+    - {source: id, emb_cut: false, name: cate_id}
+    - {source: id, name: item_history}
+    - {source: id, name: cate_history}
+    - {source: text, emb_cut: true, name: item_emb}
+    - {source: text, name: item_emb_history}
+    filter: {func: cosine, threshold: 100, target_field: item_emb, sequence_field: item_emb_history, filter_type: top_score}
+    group_id: user_id
+    learning_rate: 0.0005
+    loss: binary_crossentropy
+    metrics: [gAUC, AUC, logloss]
+    model: DCN_filter
+    model_id: DCN_text
+    model_root: ./checkpoints/DCN_yelp_x1/
+    monitor: {AUC: 1, gAUC: 1}
+    monitor_mode: max
+    net_dropout: 0.1
+    net_regularizer: 0
+    num_cross_layers: 6
+    num_workers: 3
+    optimizer: adam
+    ordered_features: null
+    pickle_feature_encoder: true
+    rebuild_dataset: false
+    save_best_only: true
+    seed: 309
+    shuffle: true
+    task: binary_classification
+    verbose: 1
+
+DCN_yelp_x1_filter_cosine_v2:
+    attention_dropout: 0.1
+    attention_hidden_activations: Dice
+    attention_hidden_units: [512, 256]
+    attention_output_activation: null
+    batch_norm: false
+    batch_size: 1024
+    dataset_id: Yelp_x1_filter_v2
+    debug_mode: false
+    dnn_activations: relu
+    dnn_hidden_units: [1024, 512, 256]
+    early_stop_patience: 2
+    embedding_dim: 64
+    embedding_regularizer: 0.005
+    epochs: 100
+    eval_interval: 1
+    feature_specs:
+    - {source: id, emb_cut: false, name: user_id}
+    - {source: id, emb_cut: false, name: item_id}
+    - {source: id, emb_cut: false, name: cate_id}
+    - {source: id, name: item_history}
+    - {source: id, name: cate_history}
+    - {source: text, emb_cut: true, name: item_emb}
+    - {source: text, name: item_emb_history}
+    filter: {func: cosine, threshold: 100, target_field: item_emb, sequence_field: item_emb_history, filter_type: top_score}
+    group_id: user_id
+    learning_rate: 0.0005
+    loss: binary_crossentropy
+    metrics: [gAUC, AUC, logloss]
+    model: DCN_filter
+    model_id: DCN_text
+    model_root: ./checkpoints/DCN_yelp_x1/
+    monitor: {AUC: 1, gAUC: 1}
+    monitor_mode: max
+    net_dropout: 0.1
+    net_regularizer: 0
+    num_cross_layers: 6
+    num_workers: 3
+    optimizer: adam
+    ordered_features: null
+    pickle_feature_encoder: true
+    rebuild_dataset: false
+    save_best_only: true
+    seed: 309
+    shuffle: true
+    task: binary_classification
+    verbose: 1
+
+DCN_yelp_x1_filter_attn_score_pre_v2:
+    attention_dropout: 0.1
+    attention_hidden_activations: Dice
+    attention_hidden_units: [512, 256]
+    attention_output_activation: null
+    batch_norm: false
+    batch_size: 1024
+    dataset_id: Yelp_x1_filter_pre_v2
+    debug_mode: false
+    dnn_activations: relu
+    dnn_hidden_units: [1024, 512, 256]
+    early_stop_patience: 2
+    embedding_dim: 64
+    embedding_regularizer: 0.005
+    epochs: 100
+    eval_interval: 1
+    feature_specs:
+    - {source: id, emb_cut: false, name: user_id}
+    - {source: id, emb_cut: false, name: item_id}
+    - {source: id, emb_cut: false, name: cate_id}
+    - {source: id, name: item_history}
+    - {source: id, name: cate_history}
+    - {source: text, emb_cut: true, name: item_emb}
+    - {source: text, name: item_emb_history}
+    filter: {func: attn_score, threshold: 100, target_field: item_emb, sequence_field: item_emb_history, filter_type: top_score, softmax: false}
+    group_id: user_id
+    learning_rate: 0.0005
+    loss: binary_crossentropy
+    metrics: [gAUC, AUC, logloss]
+    model: DCN_filter
+    model_id: DCN_text
+    model_root: ./checkpoints/DCN_yelp_x1/
+    monitor: {AUC: 1, gAUC: 1}
+    monitor_mode: max
+    net_dropout: 0.1
+    net_regularizer: 0
+    num_cross_layers: 6
+    num_workers: 3
+    optimizer: adam
+    ordered_features: null
+    pickle_feature_encoder: true
+    rebuild_dataset: false
+    save_best_only: true
+    seed: 309
+    shuffle: true
+    task: binary_classification
+    verbose: 1
+
+DCN_yelp_x1_filter_attn_score_v2:
+    attention_dropout: 0.1
+    attention_hidden_activations: Dice
+    attention_hidden_units: [512, 256]
+    attention_output_activation: null
+    batch_norm: false
+    batch_size: 1024
+    dataset_id: Yelp_x1_filter_v2
+    debug_mode: false
+    dnn_activations: relu
+    dnn_hidden_units: [1024, 512, 256]
+    early_stop_patience: 2
+    embedding_dim: 64
+    embedding_regularizer: 0.005
+    epochs: 100
+    eval_interval: 1
+    feature_specs:
+    - {source: id, emb_cut: false, name: user_id}
+    - {source: id, emb_cut: false, name: item_id}
+    - {source: id, emb_cut: false, name: cate_id}
+    - {source: id, name: item_history}
+    - {source: id, name: cate_history}
+    - {source: text, emb_cut: true, name: item_emb}
+    - {source: text, name: item_emb_history}
+    filter: {func: attn_score, threshold: 100, target_field: item_emb, sequence_field: item_emb_history, filter_type: top_score, softmax: false}
+    group_id: user_id
+    learning_rate: 0.0005
+    loss: binary_crossentropy
+    metrics: [gAUC, AUC, logloss]
+    model: DCN_filter
+    model_id: DCN_text
+    model_root: ./checkpoints/DCN_yelp_x1/
+    monitor: {AUC: 1, gAUC: 1}
+    monitor_mode: max
+    net_dropout: 0.1
+    net_regularizer: 0
+    num_cross_layers: 6
+    num_workers: 3
+    optimizer: adam
+    ordered_features: null
+    pickle_feature_encoder: true
+    rebuild_dataset: false
+    save_best_only: true
+    seed: 309
+    shuffle: true
+    task: binary_classification
+    verbose: 1
+

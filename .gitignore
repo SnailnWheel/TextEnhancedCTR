@@ -112,6 +112,6 @@ test_idealab.ipynb
 .vscode
 data/Amazon*
 data/KKBox
+data/Yelp
 *.png
 sim_score/*.csv
-.github/
